@@ -1,0 +1,15 @@
+<databaseChangeLog>
+    <changeSet id="2" author="podvo">
+        <createTable tableName="Locations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="userId" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_locations_users" references="Users(id)"/>
+            </column>
+            <column name="latitude" type="DECIMAL(10,8)"/>
+            <column name="longitude" type="DECIMAL(11,8)"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

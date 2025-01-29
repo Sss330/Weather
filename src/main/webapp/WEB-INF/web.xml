@@ -1,0 +1,7 @@
+<!DOCTYPE web-app PUBLIC
+        "-//Sun Microsystem, Inc.//DTD Web Aplication 2.3"
+        >
+    
+    <web-app>
+        <display-name>Archetype Create Web </display-name>
+    </web-app>
