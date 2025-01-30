@@ -1,7 +1,7 @@
 package exception;
 
-public class UserNotSaveException extends RuntimeException {
-    public UserNotSaveException(String message) {
+public class SavingUserException extends RuntimeException {
+    public SavingUserException(String message) {
         super(message);
     }
 }

@@ -1,14 +1,17 @@
-package controller;
+package test;
 
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-@Controller
+
+
 public class TestSpring {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
 
-    @GetMapping("/weather")
-    public void asd (){
-
+        TestBean bean = context.getBean("testBean", TestBean.class);
+        context.close();
     }
 }
+
+

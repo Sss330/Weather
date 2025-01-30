@@ -1,4 +1,4 @@
-package sessions;
+package session;
 
 public class Cookie {
 }
