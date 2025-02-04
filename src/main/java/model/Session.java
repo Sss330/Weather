@@ -15,13 +15,12 @@ import java.util.UUID;
 @Table(name = "sessions")
 public class Session {
     @Id
-    @Column(name ="id",nullable = false)
+    @Column(name = "id", nullable = false)
     UUID id;
-
     @ManyToOne
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     User userId;
-    @Column(name = "expires_at",nullable = false)
+    @Column(name = "expires_at", nullable = false)
     LocalDateTime expiresAt;
-
 }
+

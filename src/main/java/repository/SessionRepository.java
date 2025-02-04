@@ -19,16 +19,29 @@ public class SessionRepository implements CrudRepository<Session> {
     private SessionFactory sessionFactory;
 
     @Transactional
-    public Optional<Session> findSessionByUserId(Long id) {
+    public Optional<Session> getSessionByUserId(Long id) {
 
         try {
             return Optional.ofNullable(sessionFactory.getCurrentSession()
-                    .createQuery("FROM Session WHERE id = :user_id", Session.class)
-                    .setParameter("id", id)
+                    .createQuery("FROM Session WHERE userId = :user_id", Session.class)
+                    .setParameter("user_id", id)
                     .uniqueResult()
             );
         } catch (Exception e) {
-            throw new SessionNotFoundException("Не удалось найти сессию по айди юзера" + e);
+            throw new SessionNotFoundException("Не удалось найти сессию по айди юзера " + e);
+        }
+    }
+    @Transactional
+    public Optional<Session> getSessionById(String sessionId) {
+
+        try {
+            return Optional.ofNullable(sessionFactory.getCurrentSession()
+                    .createQuery("FROM Session WHERE id = :id", Session.class)
+                    .setParameter("id", sessionId)
+                    .uniqueResult()
+            );
+        } catch (Exception e) {
+            throw new SessionNotFoundException("Не удалось найти сессию по айди сессии " + e);
         }
     }
 
