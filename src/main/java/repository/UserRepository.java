@@ -4,24 +4,22 @@ import exception.DeletingUserException;
 import exception.SavingUserException;
 import exception.UserNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import model.User;
 import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
+@RequiredArgsConstructor
 public class UserRepository implements CrudRepository<User> {
 
-    @Autowired
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     @Transactional()
-    public Optional<User> findUserByLogin(String login) throws UserNotFoundException {
+    public Optional<User> getUserByLogin(String login) throws UserNotFoundException {
         try {
             return Optional.ofNullable(
                     sessionFactory.getCurrentSession()
@@ -34,13 +32,26 @@ public class UserRepository implements CrudRepository<User> {
         }
     }
 
+    @Transactional()
+    public boolean isUserAlreadyExist(String login) throws UserNotFoundException {
+        try {
+            Long user = sessionFactory.getCurrentSession()
+                    .createQuery("SELECT COUNT(*) FROM User WHERE login = :login", Long.class)
+                    .setParameter("login", login)
+                    .uniqueResult();
+            return user != null && user > 0;
+        } catch (Exception e) {
+            throw new UserNotFoundException("Не удалось найти юзера " + e);
+        }
+    }
+
     @Transactional
     @Override
     public void save(User user) throws SavingUserException {
         try {
             sessionFactory.getCurrentSession().save(user);
         } catch (Exception e) {
-            throw new SavingUserException("Не удалось сохранить юзера " + e);
+            throw new SavingUserException("Can`t save user " + e);
         }
     }
 

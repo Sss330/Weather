@@ -2,25 +2,20 @@ package repository;
 
 import exception.DeletingLocationException;
 import exception.SavingLocationException;
+import lombok.RequiredArgsConstructor;
 import model.Location;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class LocationRepository implements CrudRepository<Location> {
 
-    private SessionFactory sessionFactory;
-
-    @Autowired
-    public LocationRepository(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-    }
-
+    private final SessionFactory sessionFactory;
 
     @Override
     public void save(Location location) {

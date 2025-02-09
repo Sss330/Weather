@@ -17,7 +17,7 @@ public class Session {
     @Id
     @Column(name = "id", nullable = false)
     UUID id;
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     User userId;
     @Column(name = "expires_at", nullable = false)

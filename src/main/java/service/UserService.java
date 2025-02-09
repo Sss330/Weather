@@ -4,46 +4,33 @@ import exception.DeletingUserException;
 import exception.SavingUserException;
 import exception.UserAlreadyExistException;
 import exception.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
 import model.User;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import repository.UserRepository;
 
 import java.util.Optional;
 
 @Service
-
+@RequiredArgsConstructor
+@Transactional
 public class UserService {
 
-    UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public void registerUser(String login, String password) {
+    public void saveUser(String login, String password) {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         try {
             User user = User.builder()
                     .login(login)
                     .password(hashedPassword)
                     .build();
-            if (userRepository.findUserByLogin(login).isPresent()) {
-                throw new UserAlreadyExistException("Юзера с данным логином уже существует ");
-            }
             userRepository.save(user);
-        } catch (Exception e) {
-            throw new SavingUserException("Не удалось сохранить юзера " + e);
-        }
-    }
 
-    public void saveUser(User user) {
-        try {
-            userRepository.save(user);
         } catch (Exception e) {
-            throw new SavingUserException("Не удалось сохранить юзера " + e);
+            throw new SavingUserException("Can`t save user " + e);
         }
     }
 
@@ -51,16 +38,24 @@ public class UserService {
         try {
             userRepository.delete(user);
         } catch (Exception e) {
-            throw new DeletingUserException("Не удалось удалить юзера " + e);
+            throw new DeletingUserException("Can`t delete user " + e);
         }
     }
 
-    public Optional<User> findUserByLogin(String login) {
+    public Optional<User> getUserByLogin(String login) {
         try {
-            return userRepository.findUserByLogin(login);
+            return userRepository.getUserByLogin(login);
 
         } catch (UserNotFoundException e) {
-            throw new UserNotFoundException("Не удалось найти юзера по логину " + e);
+            throw new UserNotFoundException("Can`t find user by login  " + e);
+        }
+    }
+
+    public boolean isUserAlreadyExist(String login) {
+        try {
+            return userRepository.isUserAlreadyExist(login);
+        } catch (UserNotFoundException e) {
+            throw new UserAlreadyExistException("Can`t find user by login " + e);
         }
     }
 

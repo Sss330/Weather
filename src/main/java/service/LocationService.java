@@ -1,15 +1,15 @@
 package service;
 
+import lombok.RequiredArgsConstructor;
 import model.Location;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import repository.LocationRepository;
 
 @Service
-public class HandlingOpenWeatherApiService {
+@RequiredArgsConstructor
+public class LocationService {
 
-    @Autowired
-    LocationRepository locationRepository;
+    private final LocationRepository locationRepository;
 
     public Location getLocationByArea(){
 

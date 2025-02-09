@@ -31,7 +31,7 @@ public class HibernateConfig {
         return dataSource;
     }
 
-    // 1. Создаём LocalSessionFactoryBean, чтобы получить SessionFactory напрямую
+   
     @Bean
     public LocalSessionFactoryBean sessionFactoryBean(DataSource dataSource) {
         LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
@@ -49,7 +49,6 @@ public class HibernateConfig {
         return sessionFactoryBean;
     }
 
-    // 2. HibernateTransactionManager, который будет «знать» о SessionFactory
     @Bean
     public HibernateTransactionManager transactionManager(LocalSessionFactoryBean sessionFactoryBean) {
         return new HibernateTransactionManager(Objects.requireNonNull(sessionFactoryBean.getObject()));

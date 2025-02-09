@@ -2,20 +2,21 @@ package filter;
 
 import jakarta.servlet.*;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import repository.SessionRepository;
 
-//проверяем по переданной куке зареган ли пользователь
+//have to check user by cookie
 
 @Component
+@RequiredArgsConstructor
 public class SessionFilter implements Filter {
 
-    @Autowired
-    private SessionRepository sessionRepository;
+    private final SessionRepository sessionRepository;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain){
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
 
     }
 }

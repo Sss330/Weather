@@ -1,57 +1,56 @@
 package service;
 
-import exception.DeletingSessionException;
-import exception.SavingSessionException;
-import exception.SessionNotFoundException;
+import exception.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import model.Session;
 import model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import repository.SessionRepository;
 import repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthService {
 
-    SessionRepository sessionRepository;
+    private final SessionRepository sessionRepository;
+    private final UserRepository userRepository;
 
-    UserRepository userRepository;
 
-    @Autowired
-    public AuthService(SessionRepository sessionRepository, UserRepository userRepository) {
-        this.sessionRepository = sessionRepository;
-        this.userRepository = userRepository;
-    }
-
-    public void signUp(User user, HttpServletResponse response) throws SavingSessionException {
+    public Session signUp(User user) throws SavingSessionException {
         try {
             UUID sessionId = UUID.randomUUID();
 
-            Cookie cookie = new Cookie("sessionId", sessionId.toString());
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            cookie.setMaxAge(3600);
-            response.addCookie(cookie);
-
             Session session = Session.builder()
-                    .id(UUID.fromString(sessionId.toString()))
+                    .id(sessionId)
                     .userId(user)
-                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    //one month
+                    .expiresAt(LocalDateTime.now().plusHours(744))
                     .build();
 
             sessionRepository.save(session);
+            return session;
         } catch (Exception e) {
-            throw new SavingSessionException("Не удалось создать сессию для юзера " + e);
+            throw new SavingSessionException("Can`t create session fot user " + e);
         }
     }
+
+    public boolean isSessionRelevant(Session session) throws SavingSessionException {
+        try {
+            return session.getExpiresAt().isAfter(LocalDateTime.now());
+        } catch (Exception e) {
+            throw new SessionAlreadyDeadException("Time for using this session is over " + e);
+        }
+    }
+
 
     public void logout(UUID sessionId, HttpServletResponse response) throws DeletingSessionException {
         try {
@@ -61,12 +60,38 @@ public class AuthService {
             response.addCookie(cookie);
 
 
-            Session session = sessionRepository.getSessionById(sessionId.toString())
-                    .orElseThrow(() -> new SessionNotFoundException("Сессия не найдена"));
+            Session session = sessionRepository.getSessionBySessionId(sessionId)
+                    .orElseThrow(() -> new SessionNotFoundException("Session is not find"));
             sessionRepository.delete(session);
         } catch (Exception e) {
-            throw new DeletingSessionException("Не удалось удалить сессию " + e);
+            throw new DeletingSessionException("Can`t logout of account " + e);
         }
     }
+    public void delete(Session session){
+        try {
+            sessionRepository.delete(session);
+        } catch (DeletingSessionException e) {
+            throw new DeletingSessionException("Can`t deleting session " + e);
+        }
+    }
+
+    public boolean isSessionAlreadyExist(Long id) {
+
+        try {
+            return sessionRepository.isSessionAlreadyExist(id);
+        } catch (Exception e) {
+            throw new SessionAlreadyExistException("Can`t check sessions " + e);
+        }
+    }
+
+    public Optional<Session> getSessionByUserId(Long id) {
+
+        try {
+            return sessionRepository.getSessionByUserId(id);
+        } catch (Exception e) {
+            throw new SessionNotFoundException("Can`t find sessions " + e);
+        }
+    }
+
 
 }
