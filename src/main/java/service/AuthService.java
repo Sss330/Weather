@@ -9,7 +9,6 @@ import model.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import repository.SessionRepository;
-import repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -22,10 +21,8 @@ import java.util.UUID;
 public class AuthService {
 
     private final SessionRepository sessionRepository;
-    private final UserRepository userRepository;
 
-
-    public Session signUp(User user) throws SavingSessionException {
+    public Optional<Session> makeSession(User user) throws SavingSessionException {
         try {
             UUID sessionId = UUID.randomUUID();
 
@@ -37,15 +34,43 @@ public class AuthService {
                     .build();
 
             sessionRepository.save(session);
-            return session;
+            return Optional.ofNullable(session);
         } catch (Exception e) {
             throw new SavingSessionException("Can`t create session fot user " + e);
         }
     }
 
+    public Optional<Session> getSessionBySessionId (UUID id){
+        try {
+            return sessionRepository.getSessionBySessionId(id);
+        } catch (Exception e) {
+            throw new SessionNotFoundException("Can`t find session by UUID " + e);
+        }
+    }
+    public Optional<Session> getSessionByUserId(Long id) {
+        try {
+            return sessionRepository.getSessionByUserId(id);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public void refreshSession(Session session) {
+        session.setExpiresAt(LocalDateTime.now().plusHours(744));
+    }
+
     public boolean isSessionRelevant(Session session) throws SavingSessionException {
         try {
             return session.getExpiresAt().isAfter(LocalDateTime.now());
+        } catch (Exception e) {
+            throw new SessionAlreadyDeadException("Time for using this session is over " + e);
+        }
+    }
+
+
+    public boolean isSessionAlreadyExist(Long id) throws SavingSessionException {
+        try {
+            return sessionRepository.isSessionAlreadyExist(id);
         } catch (Exception e) {
             throw new SessionAlreadyDeadException("Time for using this session is over " + e);
         }
@@ -67,31 +92,12 @@ public class AuthService {
             throw new DeletingSessionException("Can`t logout of account " + e);
         }
     }
-    public void delete(Session session){
+
+    public void delete(Session session) {
         try {
             sessionRepository.delete(session);
         } catch (DeletingSessionException e) {
             throw new DeletingSessionException("Can`t deleting session " + e);
         }
     }
-
-    public boolean isSessionAlreadyExist(Long id) {
-
-        try {
-            return sessionRepository.isSessionAlreadyExist(id);
-        } catch (Exception e) {
-            throw new SessionAlreadyExistException("Can`t check sessions " + e);
-        }
-    }
-
-    public Optional<Session> getSessionByUserId(Long id) {
-
-        try {
-            return sessionRepository.getSessionByUserId(id);
-        } catch (Exception e) {
-            throw new SessionNotFoundException("Can`t find sessions " + e);
-        }
-    }
-
-
 }

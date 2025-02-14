@@ -1,5 +1,6 @@
 package repository;
 
+import dto.UserDto;
 import exception.DeletingUserException;
 import exception.SavingUserException;
 import exception.UserNotFoundException;
@@ -29,19 +30,6 @@ public class UserRepository implements CrudRepository<User> {
             );
         } catch (Exception e) {
             throw new UserNotFoundException("Не удалось найти юзера по логину " + e);
-        }
-    }
-
-    @Transactional()
-    public boolean isUserAlreadyExist(String login) throws UserNotFoundException {
-        try {
-            Long user = sessionFactory.getCurrentSession()
-                    .createQuery("SELECT COUNT(*) FROM User WHERE login = :login", Long.class)
-                    .setParameter("login", login)
-                    .uniqueResult();
-            return user != null && user > 0;
-        } catch (Exception e) {
-            throw new UserNotFoundException("Не удалось найти юзера " + e);
         }
     }
 

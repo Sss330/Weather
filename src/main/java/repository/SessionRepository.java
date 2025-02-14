@@ -23,20 +23,20 @@ public class SessionRepository implements CrudRepository<Session> {
     public Optional<Session> getSessionByUserId(Long id) {
         try {
             return Optional.ofNullable(sessionFactory.getCurrentSession()
-                    .createQuery("FROM Session WHERE userId = :user_id", Session.class)
+                    .createQuery("FROM Session s WHERE s.userId.id = :id", Session.class)
                     .setParameter("user_id", id)
                     .uniqueResult()
             );
         } catch (Exception e) {
-            throw new SessionNotFoundException("Не удалось найти сессию по айди юзера " + e);
+            throw new SessionNotFoundException("Can`t find session " + e);
         }
     }
 
     @Transactional
     public boolean isSessionAlreadyExist(Long userId) {
         try {
-           Long session = sessionFactory.getCurrentSession()
-                    .createQuery("SELECT COUNT(*) FROM Session WHERE userId = :user_id", Long.class)
+            Long session = sessionFactory.getCurrentSession()
+                    .createQuery("SELECT COUNT(*) FROM Session WHERE userId.id = :user_id", Long.class)
                     .setParameter("user_id", userId)
                     .uniqueResult();
             return session != null && session > 0;

@@ -17,6 +17,27 @@ public class LocationRepository implements CrudRepository<Location> {
 
     private final SessionFactory sessionFactory;
 
+    public void deleteById(Long id) {
+        try {
+            Location location = sessionFactory.getCurrentSession()
+                    .createQuery("FROM Location WHERE userId = :id", Location.class)
+                    .setParameter("user_id", id)
+                    .uniqueResult();
+            if (location != null) {
+                sessionFactory.getCurrentSession().delete(location);
+            }
+        } catch (Exception e) {
+            throw new DeletingLocationException("Не удалось удалить локацию " + e);
+        }
+    }
+
+    public List<Location> findByUserId(Long id) {
+        return sessionFactory.getCurrentSession()
+                .createQuery("FROM Location WHERE userId = :id", Location.class)
+                .setParameter("user_id", id)
+                .getResultList();
+    }
+
     @Override
     public void save(Location location) {
         try {

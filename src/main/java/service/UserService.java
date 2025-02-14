@@ -20,7 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public void saveUser(String login, String password) {
+    public Optional<User>  saveUser(String login, String password) {
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
         try {
             User user = User.builder()
@@ -28,7 +28,7 @@ public class UserService {
                     .password(hashedPassword)
                     .build();
             userRepository.save(user);
-
+            return Optional.ofNullable(user);
         } catch (Exception e) {
             throw new SavingUserException("Can`t save user " + e);
         }
@@ -42,6 +42,10 @@ public class UserService {
         }
     }
 
+    public boolean isPasswordCorrect(String password, User user) {
+        return BCrypt.checkpw(password, user.getPassword());
+    }
+    
     public Optional<User> getUserByLogin(String login) {
         try {
             return userRepository.getUserByLogin(login);
@@ -50,13 +54,4 @@ public class UserService {
             throw new UserNotFoundException("Can`t find user by login  " + e);
         }
     }
-
-    public boolean isUserAlreadyExist(String login) {
-        try {
-            return userRepository.isUserAlreadyExist(login);
-        } catch (UserNotFoundException e) {
-            throw new UserAlreadyExistException("Can`t find user by login " + e);
-        }
-    }
-
 }
