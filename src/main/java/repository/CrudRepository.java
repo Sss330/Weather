@@ -7,7 +7,7 @@ public interface CrudRepository<T> {
 
     void save (T t);
 
-    Optional<List<T>> findAll();
+    List<T> findAll();
 
     void delete (T t);
 }

@@ -1,43 +1,45 @@
 package repository;
 
+
 import exception.DeletingLocationException;
 import exception.SavingLocationException;
 import lombok.RequiredArgsConstructor;
 import model.Location;
+
+import model.User;
 import org.hibernate.HibernateException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional
 public class LocationRepository implements CrudRepository<Location> {
 
     private final SessionFactory sessionFactory;
 
-    public void deleteById(Long id) {
-        try {
-            Location location = sessionFactory.getCurrentSession()
-                    .createQuery("FROM Location WHERE userId = :id", Location.class)
-                    .setParameter("user_id", id)
-                    .uniqueResult();
-            if (location != null) {
-                sessionFactory.getCurrentSession().delete(location);
-            }
-        } catch (Exception e) {
-            throw new DeletingLocationException("Не удалось удалить локацию " + e);
-        }
-    }
 
-    public List<Location> findByUserId(Long id) {
+    @Transactional
+    public void deleteByCoordinates(User userId, String name) {
+        Session session = sessionFactory.getCurrentSession();
+        session.createQuery("DELETE FROM Location q WHERE q.userId = :userId AND q.name = :name")
+                .setParameter("userId", userId)
+                .setParameter("name", name)
+                .executeUpdate();
+
+    }
+    @Transactional
+    public List<Location> findLocationsByUserId(User userId) {
         return sessionFactory.getCurrentSession()
-                .createQuery("FROM Location WHERE userId = :id", Location.class)
-                .setParameter("user_id", id)
+                .createQuery("FROM Location A WHERE A.userId = :userId",Location.class)
+                .setParameter("userId", userId)
                 .getResultList();
     }
-
+    @Transactional
     @Override
     public void save(Location location) {
         try {
@@ -46,19 +48,18 @@ public class LocationRepository implements CrudRepository<Location> {
             throw new SavingLocationException("Не удалось сохранить локацию " + e);
         }
     }
-
+    @Transactional
     @Override
-    public Optional<List<Location>> findAll() {
+    public List<Location> findAll() {
         try {
-            return Optional.ofNullable(sessionFactory.getCurrentSession()
+            return sessionFactory.getCurrentSession()
                     .createQuery("FROM Location", Location.class)
-                    .getResultList()
-            );
+                    .getResultList();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-
+    @Transactional
     @Override
     public void delete(Location location) {
         try {

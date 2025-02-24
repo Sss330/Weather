@@ -23,9 +23,9 @@ public class LocationResponseDto {
     private String state;
 
     @JsonProperty("lat")
-    private BigDecimal lat;
+    private BigDecimal latitude;
 
     @JsonProperty("lon")
-    private BigDecimal lon;
+    private BigDecimal longitude;
 
 }

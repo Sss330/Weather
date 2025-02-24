@@ -3,40 +3,41 @@ package repository;
 import exception.DeletingSessionException;
 import exception.SavingSessionException;
 import exception.SessionNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import model.Session;
+import model.User;
 import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
+@Transactional
 @Repository
 @RequiredArgsConstructor
 public class SessionRepository implements CrudRepository<Session> {
 
     private final SessionFactory sessionFactory;
 
-    @Transactional
-    public Optional<Session> getSessionByUserId(Long id) {
+    @Transactional (readOnly = true)
+    public Optional<Session> getSessionByUserId(User id) {
         try {
             return Optional.ofNullable(sessionFactory.getCurrentSession()
-                    .createQuery("FROM Session s WHERE s.userId.id = :id", Session.class)
-                    .setParameter("user_id", id)
+                    .createQuery("FROM Session s WHERE s.userId = :id", Session.class)
+                    .setParameter("id", id)
                     .uniqueResult()
             );
         } catch (Exception e) {
-            throw new SessionNotFoundException("Can`t find session " + e);
+            return Optional.empty();
         }
     }
 
     @Transactional
-    public boolean isSessionAlreadyExist(Long userId) {
+    public boolean isSessionAlreadyExist(User userId) {
         try {
             Long session = sessionFactory.getCurrentSession()
-                    .createQuery("SELECT COUNT(*) FROM Session WHERE userId.id = :user_id", Long.class)
+                    .createQuery("SELECT COUNT(*) FROM Session WHERE userId = :user_id", Long.class)
                     .setParameter("user_id", userId)
                     .uniqueResult();
             return session != null && session > 0;
@@ -46,10 +47,10 @@ public class SessionRepository implements CrudRepository<Session> {
     }
 
     @Transactional
-    public Optional<Session> getSessionBySessionId(UUID sessionId) {
+    public Optional<Session> getSessionBySessionId(String sessionId) {
         try {
             return Optional.ofNullable(sessionFactory.getCurrentSession()
-                    .createQuery("FROM Session WHERE id = :id", Session.class)
+                    .createQuery("FROM Session a WHERE a.id = :id", Session.class)
                     .setParameter("id", sessionId)
                     .uniqueResult()
             );
@@ -70,12 +71,11 @@ public class SessionRepository implements CrudRepository<Session> {
 
     @Transactional
     @Override
-    public Optional<List<Session>> findAll() {
+    public List<Session> findAll() {
         try {
-            return Optional.ofNullable(sessionFactory.getCurrentSession()
+            return sessionFactory.getCurrentSession()
                     .createQuery("FROM Session", Session.class)
-                    .getResultList()
-            );
+                    .getResultList();
         } catch (Exception e) {
             throw new SessionNotFoundException("Не удалось найти все сессии " + e);
         }

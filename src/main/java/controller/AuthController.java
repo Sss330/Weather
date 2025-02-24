@@ -3,9 +3,7 @@ package controller;
 import exception.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import model.Session;
 import model.User;
 import org.springframework.stereotype.Controller;
@@ -17,7 +15,6 @@ import service.UserService;
 import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/registration")
@@ -25,7 +22,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    final int MIN_PASSWORD_LENGTH = 3;
+    private static final int COOKIE_MAX_AGE = 3600;
+    private static final int COOKIE_MIN_AGE = 0;
 
 
     @GetMapping("/sign-up")
@@ -35,8 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    public String signUpAuthorization(@CookieValue(value = "sessionId", required = false) String sessionId,
-                                      @ModelAttribute("user") User user,
+    public String signUpAuthorization(@ModelAttribute("user") User user,
                                       @RequestParam String repeatPassword,
                                       HttpServletResponse resp,
                                       Model model) {
@@ -46,25 +43,25 @@ public class AuthController {
             return "sign-up-with-errors";
         }
 
-      /*  if (user.getPassword().length() <= MIN_PASSWORD_LENGTH) {
-            log.error("User selected a busy username  {}", user.getLogin());
-            model.addAttribute("error", "Password should be longer than 3 chars ");
+
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getPassword().isBlank()) {
+            model.addAttribute("error", "Login and password is required");
             return "sign-up-with-errors";
-        }*/
+        }
 
         try {
-            User savedUser = userService.saveUser(user.getLogin(), user.getPassword())
-                    .orElseThrow(() -> new RuntimeException("User not saved"));
+            User savedUser = userService.saveUser(user);
+
 
             Session session = authService.makeSession(savedUser)
-                    .orElseThrow(() -> new RuntimeException("Session not created"));
+                    .orElseThrow(() -> new RuntimeException("Session is`t saved"));
 
             setCookie(resp, session);
 
-        } catch (Exception e) {
-            return "redirect:/error";
+            return "redirect:/";
+        } catch (SignUpException e) {
+            return "error";
         }
-        return "redirect:/home";
     }
 
     @GetMapping("/sign-in")
@@ -74,46 +71,52 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public String signIn(@CookieValue(value = "sessionId", required = false) String sessionId,
-                         @ModelAttribute("user") User user,
+    public String signIn(@ModelAttribute("user") User user,
                          HttpServletResponse resp,
                          Model model) {
         try {
-            User existingUser = userService.getUserByLogin(user.getLogin())
+            User existingUser = userService.findUserByLogin(user.getLogin())
                     .orElseThrow(() -> new UserNotFoundException("User not found"));
 
             if (!userService.isPasswordCorrect(user.getPassword(), existingUser)) {
                 model.addAttribute("error", "Wrong password!");
                 return "sign-in-with-errors";
             }
-           /* = authService.getSessionByUserId(existingUser.getId())
-                    .map(existingSession -> {
-                        authService.refreshSession(existingSession);
-                        return existingSession;
-                    })
-                    .orElseGet(() -> authService.makeSession(existingUser)
-                            .orElseThrow(() -> new RuntimeException("Не удалось создать сессию"))
-                    );
-            setCookie(resp, session);*/
 
-                Cookie cookie = new Cookie("sessionId", sessionId);
-                cookie.setHttpOnly(true);
-                cookie.setPath("/");
-                cookie.setMaxAge(3600);
-                resp.addCookie(cookie);
+            //
+            Optional<Session> existingSession = authService.getSessionByUserId(existingUser);
+            Session session;
+
+            if (existingSession.isPresent()) {
+                session = existingSession.get();
+                authService.refreshSession(session);
+            } else {
+                Optional<Session> newSession = authService.makeSession(existingUser);
+                if (newSession.isEmpty()) {
+                    model.addAttribute("error", "Can`t create session, pls try again");
+                    return "sign-in-with-errors";
+                }
+                session = newSession.get();
+            }
+            setCookie(resp, session);
+            return "redirect:/";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Login failed: " + e.getMessage());
-            return "sign-in-with-errors";
+            return "error";
         }
-        return "redirect:/home";
     }
 
     @PostMapping("/logout")
     public String logout(@CookieValue("sessionId") String sessionId,
                          HttpServletResponse response) {
+
+        if (sessionId == null || sessionId.isBlank()) {
+            return "redirect:/registration/sign-in";
+        }
+
         try {
             authService.logout(UUID.fromString(sessionId), response);
+            deleteCookie(response);
         } catch (Exception e) {
             return "error";
         }
@@ -124,7 +127,15 @@ public class AuthController {
         Cookie cookie = new Cookie("sessionId", session.getId().toString());
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(3600);
+        cookie.setMaxAge(COOKIE_MAX_AGE);
+        resp.addCookie(cookie);
+    }
+
+    private void deleteCookie(HttpServletResponse resp) {
+        Cookie cookie = new Cookie("sessionId", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(COOKIE_MIN_AGE);
         resp.addCookie(cookie);
     }
 }

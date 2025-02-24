@@ -7,7 +7,7 @@
 
     <changeSet id="3" author="podvo">
         <createTable tableName="sessions">
-            <column name="id" type="VARCHAR(40)">
+            <column name="id" type="VARCHAR">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="user_id" type="BIGINT">

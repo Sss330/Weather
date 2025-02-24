@@ -16,7 +16,7 @@ import java.util.UUID;
 public class Session {
     @Id
     @Column(name = "id", nullable = false)
-    UUID id;
+    String id;
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     User userId;

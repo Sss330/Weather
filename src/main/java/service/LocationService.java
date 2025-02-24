@@ -1,32 +1,57 @@
 package service;
 
 import dto.api.LocationResponseDto;
+import dto.api.SearchQuery;
+import dto.api.WeatherResponseDto;
 import exception.DeletingLocationException;
+import exception.LocationNotFoundException;
 import exception.SavingLocationException;
+import exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import mapper.LocationMapper;
+import lombok.extern.slf4j.Slf4j;
 import model.Location;
+import model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import repository.LocationRepository;
+import repository.UserRepository;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class LocationService {
 
     private final LocationRepository locationRepository;
-    private final OpenWeatherService openWeatherService;
+    private final OpenWeatherApiService openWeatherService;
+    private final UserRepository userRepository;
 
-    public Location getLocationByArea(String area) {
-        return LocationMapper.INSTANCE.toEntity(openWeatherService.getLocationByArea(area));
+
+    public List<WeatherResponseDto> getLocationByArea(SearchQuery searchQuery) {
+        try {
+            return openWeatherService.getLocationByArea(searchQuery);
+        } catch (Exception e) {
+            throw new LocationNotFoundException("Can`t find location by area" + e);
+        }
     }
 
-    public List<LocationResponseDto> getLocationByCoordinates(BigDecimal lat, BigDecimal lon) {
+    public LocationResponseDto getLocationByCoordinates(BigDecimal lat, BigDecimal lon) {
+        try {
 
-        return LocationMapper.INSTANCE.toEntity(openWeatherService.getLocationByCoordinates(lat, lon));
+            return openWeatherService.getLocationByCoordinates(lat, lon);
+        } catch (Exception e) {
+            throw new LocationNotFoundException("Can`t find location by coordinates" + e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<Location> getUsersLocations(User user) {
+        userRepository.getUserByLogin(user.getLogin())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return locationRepository.findLocationsByUserId(user);
     }
 
     public void saveLocation(Location location) {
@@ -36,27 +61,13 @@ public class LocationService {
             throw new SavingLocationException("Can`t save location" + e);
         }
     }
-    public void deleteLocation(Long id) {
-        try {
-            locationRepository.deleteById(id);
-        } catch (Exception e) {
-            throw new SavingLocationException("Can`t delete location" + e);
-        }
-    }
-    public List<Location> getAllLocation(Long id) {
-        try {
-           return locationRepository.findAll().orElse(Collections.emptyList());
-        } catch (Exception e) {
-            throw new SavingLocationException("Can`t get all locations " + e);
-        }
-    }
 
-    public void deleteLocation(LocationResponseDto locationDto) {
+
+    public void deleteLocationByUserId(User id, String nameLocation) {
         try {
-            Location location = LocationMapper.INSTANCE.toEntity(locationDto);
-            locationRepository.delete(location);
+            locationRepository.deleteByCoordinates(id, nameLocation);
         } catch (Exception e) {
-            throw new DeletingLocationException("Can`t delete location" + e);
+            throw new DeletingLocationException("Can`t delete location by user id" + e);
         }
     }
 }

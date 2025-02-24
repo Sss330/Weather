@@ -1,6 +1,6 @@
 package config;
 
-import handler.interceptor.AuthInterceptor;
+import mapper.LocationMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,9 +17,10 @@ import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 @EnableTransactionManagement(proxyTargetClass = true)
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = {"controller", "service", "repository", "model","handler"})
+@ComponentScan(basePackages = {"controller", "service", "repository", "model","mapper","handler"})
 @Import(HibernateConfig.class)
 public class SpringConfig implements WebMvcConfigurer {
+
 
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
@@ -38,6 +39,7 @@ public class SpringConfig implements WebMvcConfigurer {
         templateEngine.setEnableSpringELCompiler(true);
         return templateEngine;
     }
+
 
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {

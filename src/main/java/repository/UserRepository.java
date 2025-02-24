@@ -1,10 +1,9 @@
 package repository;
 
-import dto.UserDto;
 import exception.DeletingUserException;
 import exception.SavingUserException;
 import exception.UserNotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import model.User;
 import org.hibernate.SessionFactory;
@@ -19,7 +18,7 @@ public class UserRepository implements CrudRepository<User> {
 
     private final SessionFactory sessionFactory;
 
-    @Transactional()
+    @Transactional
     public Optional<User> getUserByLogin(String login) throws UserNotFoundException {
         try {
             return Optional.ofNullable(
@@ -32,10 +31,9 @@ public class UserRepository implements CrudRepository<User> {
             throw new UserNotFoundException("Не удалось найти юзера по логину " + e);
         }
     }
-
     @Transactional
     @Override
-    public void save(User user) throws SavingUserException {
+    public void save(User user){
         try {
             sessionFactory.getCurrentSession().save(user);
         } catch (Exception e) {
@@ -45,25 +43,21 @@ public class UserRepository implements CrudRepository<User> {
 
     @Transactional
     @Override
-    public Optional<List<User>> findAll() throws UserNotFoundException {
-        try {
-            return Optional.ofNullable(sessionFactory
-                    .getCurrentSession()
-                    .createQuery("FROM User ", User.class)
-                    .getResultList());
-        } catch (Exception e) {
-            throw new UserNotFoundException("Не удалось найти всех юзеров" + e);
-        }
+    public List<User> findAll() {
+        return sessionFactory
+                .getCurrentSession()
+                .createQuery("FROM User", User.class)
+                .getResultList();
     }
 
     @Transactional
     @Override
     public void delete(User user) throws DeletingUserException {
+
         try {
             sessionFactory.getCurrentSession().delete(user);
         } catch (Exception e) {
-            throw new DeletingUserException("Не удалось удалить юзера " + e);
+            throw new DeletingUserException("Не удалось удалить пользователя: " + e.getMessage());
         }
-
     }
 }

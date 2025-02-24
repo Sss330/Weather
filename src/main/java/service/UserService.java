@@ -1,17 +1,18 @@
 package service;
 
-import exception.DeletingUserException;
-import exception.SavingUserException;
-import exception.UserAlreadyExistException;
-import exception.UserNotFoundException;
+import exception.*;
 import lombok.RequiredArgsConstructor;
+import model.Session;
 import model.User;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import repository.SessionRepository;
 import repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,19 +20,19 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final SessionRepository sessionRepository;
+    private final AuthService authService;
 
-    public Optional<User>  saveUser(String login, String password) {
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-        try {
-            User user = User.builder()
-                    .login(login)
-                    .password(hashedPassword)
-                    .build();
-            userRepository.save(user);
-            return Optional.ofNullable(user);
-        } catch (Exception e) {
-            throw new SavingUserException("Can`t save user " + e);
-        }
+    public User saveUser(User user) {
+        String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+
+        user = User.builder()
+                .login(user.getLogin())
+                .password(hashedPassword)
+                .build();
+        userRepository.save(user);
+        return user;
+
     }
 
     public void deleteUser(User user) {
@@ -45,13 +46,25 @@ public class UserService {
     public boolean isPasswordCorrect(String password, User user) {
         return BCrypt.checkpw(password, user.getPassword());
     }
-    
-    public Optional<User> getUserByLogin(String login) {
-        try {
-            return userRepository.getUserByLogin(login);
 
-        } catch (UserNotFoundException e) {
-            throw new UserNotFoundException("Can`t find user by login  " + e);
+
+    public User getUserBySession(String sessionId) {
+        Session session = sessionRepository.getSessionBySessionId(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException("Session was not found"));
+
+        if (!authService.isSessionRelevant(session)) {
+            authService.delete(session);
+            throw new SessionAlreadyDeadException("Session is over ");
         }
+
+        return User.builder()
+                .id(session.getUserId().getId())
+                .login(session.getUserId().getLogin())
+                .build();
+    }
+
+
+    public Optional<User> findUserByLogin(String login) {
+        return userRepository.getUserByLogin(login);
     }
 }

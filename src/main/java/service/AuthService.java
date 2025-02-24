@@ -24,10 +24,8 @@ public class AuthService {
 
     public Optional<Session> makeSession(User user) throws SavingSessionException {
         try {
-            UUID sessionId = UUID.randomUUID();
-
             Session session = Session.builder()
-                    .id(sessionId)
+                    .id(UUID.randomUUID().toString())
                     .userId(user)
                     //one month
                     .expiresAt(LocalDateTime.now().plusHours(744))
@@ -36,18 +34,18 @@ public class AuthService {
             sessionRepository.save(session);
             return Optional.ofNullable(session);
         } catch (Exception e) {
-            throw new SavingSessionException("Can`t create session fot user " + e);
+            return Optional.empty();
         }
     }
 
-    public Optional<Session> getSessionBySessionId (UUID id){
+    public Optional<Session> getSessionBySessionId (String id){
         try {
             return sessionRepository.getSessionBySessionId(id);
         } catch (Exception e) {
             throw new SessionNotFoundException("Can`t find session by UUID " + e);
         }
     }
-    public Optional<Session> getSessionByUserId(Long id) {
+    public Optional<Session> getSessionByUserId(User id) {
         try {
             return sessionRepository.getSessionByUserId(id);
         } catch (Exception e) {
@@ -68,7 +66,7 @@ public class AuthService {
     }
 
 
-    public boolean isSessionAlreadyExist(Long id) throws SavingSessionException {
+    public boolean isSessionAlreadyExist(User id) throws SavingSessionException {
         try {
             return sessionRepository.isSessionAlreadyExist(id);
         } catch (Exception e) {
@@ -85,7 +83,7 @@ public class AuthService {
             response.addCookie(cookie);
 
 
-            Session session = sessionRepository.getSessionBySessionId(sessionId)
+            Session session = sessionRepository.getSessionBySessionId(sessionId.toString())
                     .orElseThrow(() -> new SessionNotFoundException("Session is not find"));
             sessionRepository.delete(session);
         } catch (Exception e) {
