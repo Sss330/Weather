@@ -1,9 +1,7 @@
 package controller;
 
-import dto.api.LocationResponseDto;
 import dto.api.SearchQuery;
 import dto.api.WeatherResponseDto;
-import exception.SavingLocationException;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import lombok.RequiredArgsConstructor;
@@ -42,45 +40,59 @@ public class LocationController {
         if (sessionId == null || sessionId.isBlank()) {
             return "redirect:/registration/sign-in";
         }
-        log.info("area parameter = {}", searchQuery);
+        try {
+            log.info("area parameter = {}", searchQuery);
 
-        User user = userService.getUserBySession(sessionId);
-        List<WeatherResponseDto> locations = locationService.getLocationByArea(searchQuery);
-        searchQuery.setArea(searchQuery.getArea());
+            User user = userService.getUserBySession(sessionId);
+            List<WeatherResponseDto> locations = locationService.getLocationByArea(searchQuery);
+            searchQuery.setArea(searchQuery.getArea());
 
-        model.addAttribute("locations", locations);
-        model.addAttribute("name", user.getLogin());
-        model.addAttribute("searchQuery", searchQuery);
+            model.addAttribute("locations", locations);
+            model.addAttribute("name", user.getLogin());
+            model.addAttribute("searchQuery", searchQuery);
 
-        return "search-results";
+            return "search-results";
+        } catch (Exception e) {
+            return "error";
+        }
     }
 
 
     @PostMapping("/search-coordinates")
     public String searchLocationByCoordinates(@CookieValue(value = "sessionId", required = false) String sessionId,
-                                              @RequestParam @DecimalMin("-90") @DecimalMax("90") BigDecimal lat,
-                                              @RequestParam @DecimalMin("-180") @DecimalMax("180") BigDecimal lon,
+                                              @RequestParam(name = "lat") @DecimalMin("-90") @DecimalMax("90") BigDecimal lat,
+                                              @RequestParam(name = "lon") @DecimalMin("-180") @DecimalMax("180") BigDecimal lon,
                                               Model model) {
         try {
             if (sessionId == null || sessionId.isBlank()) {
                 return "redirect:/registration/sign-in";
             }
-            LocationResponseDto location = locationService.getLocationByCoordinates(lat, lon);
-            model.addAttribute("location", location);
+
+            User user = userService.getUserBySession(sessionId);
+            WeatherResponseDto location = locationService.getLocationByCoordinates(lat, lon);
+
+            model.addAttribute("locations", List.of(location));
+            model.addAttribute("name", user.getLogin());
 
         } catch (Exception e) {
-            model.addAttribute("error", "Location not found.");
+            return "error";
         }
-        return "redirect:/search-results";
+        return "search-results";
     }
 
     @PostMapping("/add-location")
     public String addLocation(@CookieValue(value = "sessionId", required = false) String sessionId,
                               @ModelAttribute("location") Location location) {
+        if (sessionId == null || sessionId.isBlank()) {
+            return "redirect:/registration/sign-in";
+        }
+
         try {
+            User user = userService.getUserBySession(sessionId);
+            location.setUserId(user);
             locationService.saveLocation(location);
         } catch (Exception e) {
-            throw new SavingLocationException("Can`t save location" + e.getMessage());
+            return "error";
         }
 
         return "redirect:/";

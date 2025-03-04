@@ -28,7 +28,7 @@ public class UserRepository implements CrudRepository<User> {
                             .uniqueResult()
             );
         } catch (Exception e) {
-            throw new UserNotFoundException("Не удалось найти юзера по логину " + e);
+            throw new UserNotFoundException("Can`t find user by login " + e);
         }
     }
     @Transactional
@@ -57,7 +57,7 @@ public class UserRepository implements CrudRepository<User> {
         try {
             sessionFactory.getCurrentSession().delete(user);
         } catch (Exception e) {
-            throw new DeletingUserException("Не удалось удалить пользователя: " + e.getMessage());
+            throw new DeletingUserException("Can`t delete user : " + e.getMessage());
         }
     }
 }

@@ -33,10 +33,15 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up")
-    public String signUpAuthorization(@ModelAttribute("user") User user,
-                                      @RequestParam String repeatPassword,
+    public String signUpAuthorization(@CookieValue(value = "sessionId", required = false) String sessionId,
+                                      @ModelAttribute("user") User user,
+                                      @RequestParam("repeatPassword") String repeatPassword,
                                       HttpServletResponse resp,
                                       Model model) {
+
+        if (sessionId != null) {
+            return "redirect:/";
+        }
 
         if (!user.getPassword().equals(repeatPassword)) {
             model.addAttribute("error", "Passwords don't match ");
@@ -51,8 +56,6 @@ public class AuthController {
 
         try {
             User savedUser = userService.saveUser(user);
-
-
             Session session = authService.makeSession(savedUser)
                     .orElseThrow(() -> new RuntimeException("Session is`t saved"));
 
@@ -71,9 +74,14 @@ public class AuthController {
     }
 
     @PostMapping("/sign-in")
-    public String signIn(@ModelAttribute("user") User user,
+    public String signIn(@CookieValue(value = "sessionId", required = false) String sessionId,
+                         @ModelAttribute("user") User user,
                          HttpServletResponse resp,
                          Model model) {
+        if (sessionId != null) {
+            return "redirect:/";
+        }
+
         try {
             User existingUser = userService.findUserByLogin(user.getLogin())
                     .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -83,7 +91,6 @@ public class AuthController {
                 return "sign-in-with-errors";
             }
 
-            //
             Optional<Session> existingSession = authService.getSessionByUserId(existingUser);
             Session session;
 

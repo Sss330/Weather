@@ -1,6 +1,5 @@
 package service;
 
-import dto.api.LocationResponseDto;
 import dto.api.SearchQuery;
 import dto.api.WeatherResponseDto;
 import exception.DeletingLocationException;
@@ -38,7 +37,7 @@ public class LocationService {
         }
     }
 
-    public LocationResponseDto getLocationByCoordinates(BigDecimal lat, BigDecimal lon) {
+    public WeatherResponseDto getLocationByCoordinates(BigDecimal lat, BigDecimal lon) {
         try {
 
             return openWeatherService.getLocationByCoordinates(lat, lon);
@@ -63,9 +62,9 @@ public class LocationService {
     }
 
 
-    public void deleteLocationByUserId(User id, String nameLocation) {
+    public void deleteLocationById(User user, Long locationId) {
         try {
-            locationRepository.deleteByCoordinates(id, nameLocation);
+            locationRepository.deleteByCoordinates(user, locationId);
         } catch (Exception e) {
             throw new DeletingLocationException("Can`t delete location by user id" + e);
         }

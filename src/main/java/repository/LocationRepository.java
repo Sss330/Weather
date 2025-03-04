@@ -24,11 +24,11 @@ public class LocationRepository implements CrudRepository<Location> {
 
 
     @Transactional
-    public void deleteByCoordinates(User userId, String name) {
+    public void deleteByCoordinates(User userId, Long id) {
         Session session = sessionFactory.getCurrentSession();
-        session.createQuery("DELETE FROM Location q WHERE q.userId = :userId AND q.name = :name")
+        session.createQuery("DELETE FROM Location q WHERE q.userId = :userId AND q.id = :id")
                 .setParameter("userId", userId)
-                .setParameter("name", name)
+                .setParameter("id", id)
                 .executeUpdate();
 
     }
@@ -45,7 +45,7 @@ public class LocationRepository implements CrudRepository<Location> {
         try {
             sessionFactory.getCurrentSession().save(location);
         } catch (HibernateException e) {
-            throw new SavingLocationException("Не удалось сохранить локацию " + e);
+            throw new SavingLocationException("Can`t find location " + e);
         }
     }
     @Transactional
@@ -65,7 +65,7 @@ public class LocationRepository implements CrudRepository<Location> {
         try {
             sessionFactory.getCurrentSession().delete(location);
         } catch (Exception e) {
-            throw new DeletingLocationException("Не удалось удалить локацию " + e);
+            throw new DeletingLocationException("Can`t find location " + e);
         }
     }
 }

@@ -38,13 +38,6 @@ public class AuthService {
         }
     }
 
-    public Optional<Session> getSessionBySessionId (String id){
-        try {
-            return sessionRepository.getSessionBySessionId(id);
-        } catch (Exception e) {
-            throw new SessionNotFoundException("Can`t find session by UUID " + e);
-        }
-    }
     public Optional<Session> getSessionByUserId(User id) {
         try {
             return sessionRepository.getSessionByUserId(id);
@@ -64,16 +57,6 @@ public class AuthService {
             throw new SessionAlreadyDeadException("Time for using this session is over " + e);
         }
     }
-
-
-    public boolean isSessionAlreadyExist(User id) throws SavingSessionException {
-        try {
-            return sessionRepository.isSessionAlreadyExist(id);
-        } catch (Exception e) {
-            throw new SessionAlreadyDeadException("Time for using this session is over " + e);
-        }
-    }
-
 
     public void logout(UUID sessionId, HttpServletResponse response) throws DeletingSessionException {
         try {

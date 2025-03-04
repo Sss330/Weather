@@ -42,7 +42,7 @@ public class SessionRepository implements CrudRepository<Session> {
                     .uniqueResult();
             return session != null && session > 0;
         } catch (Exception e) {
-            throw new SessionNotFoundException("Не проверить сессию по айди юзера " + e);
+            throw new SessionNotFoundException("Can`t find session " + e);
         }
     }
 
@@ -55,7 +55,7 @@ public class SessionRepository implements CrudRepository<Session> {
                     .uniqueResult()
             );
         } catch (Exception e) {
-            throw new SessionNotFoundException("Не удалось найти сессию по айди сессии " + e);
+            throw new SessionNotFoundException("Can`t find session by id " + e);
         }
     }
 
@@ -65,7 +65,7 @@ public class SessionRepository implements CrudRepository<Session> {
         try {
             sessionFactory.getCurrentSession().save(session);
         } catch (Exception e) {
-            throw new SavingSessionException("Не удалось сохранить сессию " + e);
+            throw new SavingSessionException("Can`t save session " + e);
         }
     }
 
@@ -77,7 +77,7 @@ public class SessionRepository implements CrudRepository<Session> {
                     .createQuery("FROM Session", Session.class)
                     .getResultList();
         } catch (Exception e) {
-            throw new SessionNotFoundException("Не удалось найти все сессии " + e);
+            throw new SessionNotFoundException("Can`t find all sessions " + e);
         }
     }
 
@@ -87,7 +87,7 @@ public class SessionRepository implements CrudRepository<Session> {
         try {
             sessionFactory.getCurrentSession().delete(session);
         } catch (Exception e) {
-            throw new DeletingSessionException("Не удалось удалить сессию " + e);
+            throw new DeletingSessionException("Can`t find session " + e);
         }
     }
 }

@@ -1,8 +1,5 @@
 package config;
 
-import jakarta.persistence.EntityManagerFactory;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AvailableSettings;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,7 +33,6 @@ public class HibernateConfig {
     public LocalSessionFactoryBean sessionFactoryBean(DataSource dataSource) {
         LocalSessionFactoryBean sessionFactoryBean = new LocalSessionFactoryBean();
         sessionFactoryBean.setDataSource(dataSource);
-        // Пакет, где лежат ваши @Entity (User, Session и т.п.)
         sessionFactoryBean.setPackagesToScan("model");
 
         Properties properties = new Properties();

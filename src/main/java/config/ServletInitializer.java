@@ -2,7 +2,6 @@ package config;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-import javax.lang.model.util.AbstractAnnotationValueVisitor6;
 
 public class ServletInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
     @Override

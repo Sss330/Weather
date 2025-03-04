@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import repository.SessionRepository;
 import repository.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,14 +31,6 @@ public class UserService {
         userRepository.save(user);
         return user;
 
-    }
-
-    public void deleteUser(User user) {
-        try {
-            userRepository.delete(user);
-        } catch (Exception e) {
-            throw new DeletingUserException("Can`t delete user " + e);
-        }
     }
 
     public boolean isPasswordCorrect(String password, User user) {
