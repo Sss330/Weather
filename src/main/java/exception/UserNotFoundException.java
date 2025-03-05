@@ -1,7 +1,7 @@
 package exception;
 
-public class NotFoundUserExceprion extends RuntimeException {
-    public NotFoundUserExceprion(String message) {
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(String message) {
         super(message);
     }
 }

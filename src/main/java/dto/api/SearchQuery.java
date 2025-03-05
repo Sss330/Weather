@@ -1,0 +1,8 @@
+package dto.api;
+
+import lombok.Data;
+
+@Data
+public class SearchQuery {
+    private String area;
+}
