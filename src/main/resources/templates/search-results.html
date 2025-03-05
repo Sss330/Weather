@@ -78,26 +78,30 @@
                 <div class="col-12 col-md-6 col-lg-3 mb-4" th:each="location : ${locations}">
                     <div class="card h-100">
                         <div class="card-body">
-
-                            <h5 class="card-title" th:text="${location.cityName}">City Name</h5>
+                            <h5 class="card-title" th:text="${location.name}">City Name</h5>
 
                             <p class="card-text mb-1">
-                                Latitude: <span th:text="${#numbers.formatDecimal(location.coordinates.latitude, 6, 6)}"></span>
+                                Latitude: <span th:text="${#numbers.formatDecimal(location.lat, 6, 6)}"></span>
                             </p>
                             <p class="card-text mb-1">
-                                Longitude: <span th:text="${#numbers.formatDecimal(location.coordinates.longitude, 6, 6)}"></span>
+                                Longitude: <span th:text="${#numbers.formatDecimal(location.lon, 6, 6)}"></span>
                             </p>
 
                             <p class="card-text mb-1">
-                                Country: <span th:text="${location.sys.countryCode}"></span>
+                                Country: <span th:text="${location.country}"></span>
+                            </p>
+
+                            <p class="card-text mb-1" th:if="${location.state != null}">
+                                State: <span th:text="${location.state}"></span>
                             </p>
 
                             <div class="mt-auto">
                                 <form th:action="@{/location/add-location}" method="post">
-                                    <input type="hidden" name="name" th:value="${location.cityName}">
-                                    <input type="hidden" name="latitude" th:value="${location.coordinates.latitude}">
-                                    <input type="hidden" name="longitude" th:value="${location.coordinates.longitude}">
-                                    <input type="hidden" name="country" th:value="${location.sys.countryCode}">
+                                    <input type="hidden" name="name" th:value="${location.name}">
+                                    <input type="hidden" name="latitude" th:value="${location.lat}">
+                                    <input type="hidden" name="longitude" th:value="${location.lon}">
+                                    <input type="hidden" name="country" th:value="${location.country}">
+                                    <input type="hidden" name="state" th:value="${location.state}">
                                     <button class="btn btn-primary w-100">Add</button>
                                 </form>
                             </div>
@@ -105,6 +109,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </section>
 </main>
@@ -115,7 +120,6 @@
 </footer>
 
 <script>
-
     function toggleSearchForm(type) {
         if (type === 'name') {
             document.getElementById('nameSearchForm').style.display = 'flex';
