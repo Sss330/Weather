@@ -1,5 +1,6 @@
 package controller;
 
+import dto.api.LocationNamesResponseDto;
 import dto.api.SearchQuery;
 import dto.api.WeatherResponseDto;
 import jakarta.validation.constraints.DecimalMax;
@@ -35,7 +36,7 @@ public class LocationController {
     @PostMapping("/search-area")
     public String searchLocationByArea(@CookieValue(value = "sessionId", required = false) String sessionId,
                                        @ModelAttribute SearchQuery searchQuery,
-                                       Model model) {
+                                       Model model) throws Exception {
 
         if (sessionId == null || sessionId.isBlank()) {
             return "redirect:/registration/sign-in";
@@ -44,8 +45,9 @@ public class LocationController {
             log.info("area parameter = {}", searchQuery);
 
             User user = userService.getUserBySession(sessionId);
-            List<WeatherResponseDto> locations = locationService.getLocationByArea(searchQuery);
+            List<LocationNamesResponseDto> locations = locationService.getLocationByArea(searchQuery);
             searchQuery.setArea(searchQuery.getArea());
+
 
             model.addAttribute("locations", locations);
             model.addAttribute("name", user.getLogin());
@@ -69,10 +71,18 @@ public class LocationController {
             }
 
             User user = userService.getUserBySession(sessionId);
-            WeatherResponseDto location = locationService.getLocationByCoordinates(lat, lon);
+            WeatherResponseDto weatherLocation = locationService.getLocationByCoordinates(lat, lon);
 
-            model.addAttribute("locations", List.of(location));
+            LocationNamesResponseDto locationNamesResponseDto = LocationNamesResponseDto.builder()
+                    .name(weatherLocation.getName())
+                    .lat(weatherLocation.getCoordinates().getLat())
+                    .lon(weatherLocation.getCoordinates().getLon())
+                    .country(weatherLocation.getSys().getCountry())
+                    .build();
+
+            model.addAttribute("locations", List.of(locationNamesResponseDto));
             model.addAttribute("name", user.getLogin());
+            model.addAttribute("searchQuery", new SearchQuery());
 
         } catch (Exception e) {
             return "error";

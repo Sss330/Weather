@@ -1,5 +1,6 @@
 package service;
 
+import dto.api.LocationNamesResponseDto;
 import dto.api.SearchQuery;
 import dto.api.WeatherResponseDto;
 import exception.DeletingLocationException;
@@ -29,7 +30,7 @@ public class LocationService {
     private final UserRepository userRepository;
 
 
-    public List<WeatherResponseDto> getLocationByArea(SearchQuery searchQuery) {
+    public List<LocationNamesResponseDto> getLocationByArea(SearchQuery searchQuery) {
         try {
             return openWeatherService.getLocationByArea(searchQuery);
         } catch (Exception e) {

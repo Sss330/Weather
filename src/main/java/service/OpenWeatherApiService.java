@@ -1,8 +1,6 @@
 package service;
 
-import dto.api.SearchQuery;
-import dto.api.SearchResponseDto;
-import dto.api.WeatherResponseDto;
+import dto.api.*;
 import exception.LocationNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +9,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -40,31 +41,30 @@ public class OpenWeatherApiService {
         return restTemplate.getForObject(url, WeatherResponseDto.class);
     }
 
-    public List<WeatherResponseDto> getLocationByArea(SearchQuery searchQuery) {
-
+    public List<LocationNamesResponseDto> getLocationByArea(SearchQuery searchQuery) {
         try {
             if (searchQuery == null || searchQuery.getArea().isBlank()) {
-                throw new IllegalArgumentException("Area is required");
+                throw new IllegalArgumentException("Area is required ");
             }
 
-            String url = UriComponentsBuilder.fromHttpUrl(apiUrl)
-                    .path("/data/2.5/find")
+            URI url = UriComponentsBuilder.fromHttpUrl(apiUrl)
+                    .path("/geo/1.0/direct")
                     .queryParam("q", searchQuery.getArea())
-                    .queryParam("type", "like")
-                    .queryParam("lang", "ru")
-                    .queryParam("mode", "json")
+                    .queryParam("limit", 5)
                     .queryParam("appid", apiKey)
-                    .queryParam("units", "metric")
-                    .toUriString();
-            log.info("Requesting Open Weather api by area {}", url);
-            log.info("OpenWeather API URL: {}", apiUrl);
+                    .build()
+                    .encode()
+                    .toUri();
 
+            log.info("Requesting OpenWeather API by area: {}", url);
 
-            SearchResponseDto response = restTemplate.getForObject(url, SearchResponseDto.class);
-            if (response == null || response.getList() == null) {
+            LocationNamesResponseDto[] response = restTemplate.getForObject(url, LocationNamesResponseDto[].class);
+
+            if (response == null || response.length == 0) {
                 throw new RuntimeException("Response is empty");
             }
-            return response.getList();
+
+            return Arrays.asList(response);
         } catch (Exception e) {
             throw new LocationNotFoundException("Location not found by area - " + e);
         }

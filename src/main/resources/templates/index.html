@@ -53,7 +53,6 @@
 
     <section id="page-content">
         <div class="container mt-4">
-            <!-- Переключатель поиска -->
             <div class="search-type-toggle">
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" name="searchType"
@@ -69,7 +68,6 @@
                 </div>
             </div>
 
-            <!-- Форма поиска по названию -->
             <form method="post" th:action="@{/location/search-area}"
                   class="d-flex my-4 search-form" id="mainNameSearchForm"
                   th:object="${searchQuery}">
@@ -86,7 +84,6 @@
                 <button type="submit" class="btn btn-outline-success">Search</button>
             </form>
 
-            <!-- Форма поиска по координатам -->
             <form method="post" th:action="@{/location/search-coordinates}"
                   class="d-flex my-4 search-form" id="mainCoordsSearchForm"
                   style="display: none;">
@@ -116,7 +113,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h2 class="temp-display mb-0" th:text="${weather.main.temperature + '°C'}"></h2>
-                                <h5 class="mb-1" th:text="|${weather.cityName}, ${weather.sys.countryCode}|"></h5>
+                                <h5 class="mb-1" th:text="|${weather.name}, ${weather.sys.country}|"></h5>
                                 <small class="feels-like" th:text="'Feels like ' + ${weather.main.feelsLike} + '°C'"></small>
                             </div>
                             <img th:if="${not #lists.isEmpty(weather.weather)}"
@@ -131,8 +128,8 @@
                                 <span th:text="${weather.main.humidity} + '%'"></span>
                             </div>
                             <div class="d-flex justify-content-between small">
-                                <span class="text-muted">Wind</span>
-                                <span th:text="${weather.wind.speed} + ' m/s'"></span>
+                                <span class="text-muted">clouds</span>
+                                <span th:text="${weather.clouds.cloudiness} + '%'"></span>
                             </div>
                         </div>
                     </div>

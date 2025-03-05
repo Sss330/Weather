@@ -46,7 +46,7 @@ public class WeatherResponseDto {
     private Long cityId;
 
     @JsonProperty("name")
-    private String cityName;
+    private String name;
 
     // included classes
     @Getter
@@ -56,9 +56,9 @@ public class WeatherResponseDto {
     @Builder
     public static class Coordinates {
         @JsonProperty("lon")
-        private BigDecimal longitude;
+        private BigDecimal lon;
         @JsonProperty("lat")
-        private BigDecimal latitude;
+        private BigDecimal lat;
     }
 
     @Getter
@@ -134,7 +134,9 @@ public class WeatherResponseDto {
     @Builder
     public static class SysInfo {
         @JsonProperty("country")
-        private String countryCode;
+        private String country;
+        @JsonProperty("state")
+        private String state;
         @JsonProperty("sunrise")
         private Long sunriseTime;
         @JsonProperty("sunset")
